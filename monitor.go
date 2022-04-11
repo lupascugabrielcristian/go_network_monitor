@@ -57,9 +57,11 @@ func main() {
 func handlePacket(packet gopacket.Packet) {
 
 	if packet.Layer( layers.LayerTypeTCP) != nil {
-		handleTCPPacket( packet )
+		// handleTCPPacket( packet )
+	} else if packet.Layer( layers.LayerTypeARP) != nil {
+		handleARPPacket( packet )
 	} else {
-		//fmt.Println(".")
+		// printLayers( packet )
 	}
 
 }
@@ -73,8 +75,9 @@ func printLayers( packet gopacket.Packet ) {
 	fmt.Println( strings.Join( layerNames, " " ))
 }
 
+// TCP PACKETS
 func handleTCPPacket( packet gopacket.Packet ) {
-	printLayers( packet )
+	//printLayers( packet )
 
 	tcpLayer := packet.Layer( layers.LayerTypeTCP )
 	tcp, _ := tcpLayer.(*layers.TCP)
@@ -84,5 +87,13 @@ func handleTCPPacket( packet gopacket.Packet ) {
 	srcIp := strings.Replace( ipv4.SrcIP.String(), " ", ".", -1 )
 	dstIp := strings.Replace( ipv4.DstIP.String(), " ", ".", -1 )
 	fmt.Printf("TCP packet from %d:%d to destination %d:%d\n", srcIp, tcp.SrcPort, dstIp, tcp.DstPort)
+}
+
+// ARP PACKETS
+func handleARPPacket( packet gopacket.Packet ) {
+	arpLayer := packet.Layer( layers.LayerTypeARP )
+	arp, _ := arpLayer.(*layers.ARP)
+	fmt.Println(arp)
+	fmt.Println(arp.DstProtAddress) // DstProtAddress este []byte. Ex: [192, 168, 1, 2]
 }
 
