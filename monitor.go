@@ -55,28 +55,34 @@ func main() {
 }
 
 func handlePacket(packet gopacket.Packet) {
-	// Listez toate layer-urile disponibile pentru acest packet
+
+	if packet.Layer( layers.LayerTypeTCP) != nil {
+		handleTCPPacket( packet )
+	} else {
+		//fmt.Println(".")
+	}
+
+}
+
+// Listez toate layer-urile disponibile pentru acest packet
+func printLayers( packet gopacket.Packet ) {
 	layerNames := make([]string, 0)
 	for _, layer := range packet.Layers() {
 		layerNames = append( layerNames, layer.LayerType().String() )
 	}
 	fmt.Println( strings.Join( layerNames, " " ))
-
-	if packet.Layer( layers.LayerTypeTCP) != nil {
-		handleTCPPacket( packet )
-	} else {
-		fmt.Println(".")
-	}
-
 }
 
 func handleTCPPacket( packet gopacket.Packet ) {
+	printLayers( packet )
+
 	tcpLayer := packet.Layer( layers.LayerTypeTCP )
 	tcp, _ := tcpLayer.(*layers.TCP)
 
 	ipv4Layer := packet.Layer( layers.LayerTypeIPv4 )
 	ipv4, _ := ipv4Layer.(*layers.IPv4)
-	// fmt.Printf("TCP packet src port %d to destination port %d\n", tcp.SrcPort, tcp.DstPort )
-	fmt.Printf("TCP packet from %d:%d to destination %d:%d\n", ipv4.SrcIP, tcp.SrcPort, ipv4.DstIP, tcp.DstPort)
+	srcIp := strings.Replace( ipv4.SrcIP.String(), " ", ".", -1 )
+	dstIp := strings.Replace( ipv4.DstIP.String(), " ", ".", -1 )
+	fmt.Printf("TCP packet from %d:%d to destination %d:%d\n", srcIp, tcp.SrcPort, dstIp, tcp.DstPort)
 }
 

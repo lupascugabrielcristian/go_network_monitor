@@ -1,0 +1,5 @@
+[General]
+num_packets=30
+
+[Monitor]
+interface=eth0
