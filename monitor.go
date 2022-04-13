@@ -93,7 +93,13 @@ func handleTCPPacket( packet gopacket.Packet ) {
 func handleARPPacket( packet gopacket.Packet ) {
 	arpLayer := packet.Layer( layers.LayerTypeARP )
 	arp, _ := arpLayer.(*layers.ARP)
-	fmt.Println(arp)
-	fmt.Println(arp.DstProtAddress) // DstProtAddress este []byte. Ex: [192, 168, 1, 2]
+
+	if arp.Operation == 1 {
+		// ARP Request
+		fmt.Printf("ARP Request from %v to %v\n", arp.SourceProtAddress, arp.DstProtAddress)
+	} else {
+		// ARP Reply
+		//fmt.Println("ARP Reply")
+	}
 }
 
