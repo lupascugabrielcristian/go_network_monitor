@@ -4,12 +4,18 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"net"
 
 	"github.com/IbrahimShahzad/gonfigure"
 	"github.com/google/gopacket/pcap"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket"
 )
+
+// Fac map de obiecte de tip IP la uint32
+// Vreau sa tin aici ip-urile care raspund
+var arp_reply_sources []net.IP
+
 
 func main() {
 	fmt.Println("Reading config file /tmp/go_mon_conf.ini")
@@ -40,17 +46,20 @@ func main() {
 		panic(err)
 	}
 
+	arp_reply_sources = make([]net.IP, 0)
 	counter := 0
 	packetSource := gopacket.NewPacketSource( handle, handle.LinkType() )
 	for packet := range packetSource.Packets() {
 		counter += 1
 		handlePacket(packet)
+		fmt.Printf("%v/%v\n", counter, numPackets)
 
 		if counter == numPackets {
 			break
 		}
 	}
 
+	fmt.Println(arp_reply_sources)
 	fmt.Println("gata")
 }
 
@@ -96,10 +105,25 @@ func handleARPPacket( packet gopacket.Packet ) {
 
 	if arp.Operation == 1 {
 		// ARP Request
-		fmt.Printf("ARP Request from %v to %v\n", arp.SourceProtAddress, arp.DstProtAddress)
+		//fmt.Printf("Machine %v vrea sa stie MAC pentru %v\n", arp.SourceProtAddress, arp.DstProtAddress)
 	} else {
 		// ARP Reply
 		//fmt.Println("ARP Reply")
+
+		// Caut daca exista deja
+		ipFound := false
+		for _, value := range arp_reply_sources {
+			if value[3] == arp.SourceProtAddress[3] {
+				ipFound = true
+				break
+			}
+		}
+
+		if !ipFound {
+			// Imi face alt slice aici
+			arp_reply_sources = append( arp_reply_sources, arp.SourceProtAddress )
+			fmt.Printf("%v a raspuns ca are MAC %v\n", arp.SourceProtAddress, arp.SourceHwAddress)
+		}
 	}
 }
 
