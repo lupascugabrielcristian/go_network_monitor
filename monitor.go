@@ -141,7 +141,7 @@ func handleARPPacket(packet gopacket.Packet) {
 
 	if arp.Operation == 1 {
 		// ARP Request
-		//fmt.Printf("Machine %v vrea sa stie MAC pentru %v\n", arp.SourceProtAddress, arp.DstProtAddress)
+		fmt.Printf("\rARP %v vrea sa stie MAC pentru %v\n", arp.SourceProtAddress, arp.DstProtAddress)
 	} else {
 		// ARP Reply
 		//fmt.Println("ARP Reply")
@@ -158,7 +158,7 @@ func handleARPPacket(packet gopacket.Packet) {
 		if !ipFound {
 			// Imi face alt slice aici
 			arp_reply_sources = append(arp_reply_sources, arp.SourceProtAddress)
-			fmt.Printf("\r%v a raspuns ca are MAC %v\n", arp.SourceProtAddress, arp.SourceHwAddress)
+			fmt.Printf("\rARP %v a raspuns ca are MAC %v\n", arp.SourceProtAddress, arp.SourceHwAddress)
 		}
 	}
 }
