@@ -3,8 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
-	_"strconv"
-	_"strings"
+	"strconv"
 
 	"github.com/IbrahimShahzad/gonfigure"
 	"github.com/google/gopacket"
@@ -32,6 +31,19 @@ func main() {
 		panic("Config value 'interface' from 'Monitor' section not found")
 	}
 
+	// Obtin range-ul de ip-uri pentru requesturile ARP
+	fromStr, _ := gonfigure.GetParameterValue(objINI, "ARP_Send", "from")
+	from, err := strconv.Atoi(fromStr)
+	if err != nil {
+		panic("Config value 'from' from 'ARP_Send' section not found")
+	}
+
+	toStr, _ := gonfigure.GetParameterValue(objINI, "ARP_Send", "to")
+	to, err := strconv.Atoi(toStr)
+	if err != nil {
+		panic("Config value 'to' from 'ARP_Send' section not found")
+	}
+
 	// Set up all the layers' fields we can.
 	eth := layers.Ethernet{
 		SrcMAC:       iface.HardwareAddr,
@@ -53,9 +65,8 @@ func main() {
 	}
 
 	// Obtin range-ul de ip-uri la care vreau sa trimit ARP request
-	targetIPs := getTargets(160, 170)
+	targetIPs := getTargets(byte(from), byte(to))
 	for _, targetIp := range targetIPs {
-		fmt.Println("Sending to ", targetIp)
 
 		// Create ARP request packet
 		routerMac, err := net.ParseMAC("38:de:ad:d7:47:90")	// MAC-ul meu
@@ -64,11 +75,8 @@ func main() {
 			panic( err )
 		}
 
-		//dst := []byte{ 192, 168, 10, 129 }		// Target IP
-		src := net.IPNet {						// Sender IP
-			IP: []byte{ 192, 168, 10, 154},
-			Mask: []byte{ 192, 168, 10, 255 },
-		}
+		// Sender IP
+		src := []byte{ 192, 168, 10, 154 }
 
 		arp := layers.ARP{
 			AddrType:          layers.LinkTypeEthernet,
@@ -77,7 +85,7 @@ func main() {
 			ProtAddressSize:   4,
 			Operation:         layers.ARPRequest,
 			SourceHwAddress:   routerMac,
-			SourceProtAddress: []byte(src.IP),
+			SourceProtAddress: src,
 			DstHwAddress:      []byte{0, 0, 0, 0, 0, 0},
 			DstProtAddress:    targetIp,
 		}
@@ -97,9 +105,9 @@ func getTargets(from byte, to byte) []net.IP {
 	// Fac lista goala de ip-uri
 	res := make([]net.IP, to - from + 1)
 
+	// Populez fiecare pozitie
 	for i := range res {
-		//res[i] = []byte{ 192, 168, 10, from + byte(i) }
-		res[i] = net.IPv4( 192, 168, 10, from + byte(i) )
+		res[i] = []byte{ 192, 168, 10, from + byte(i) }
 	}
 
 	return res
