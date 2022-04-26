@@ -62,15 +62,15 @@ func main() {
 	}
 
 	fmt.Println(arp_reply_sources)
-	fmt.Println(tcp_source_ips)
-	fmt.Println(tcp_dest_ips)
+	//fmt.Println(tcp_source_ips)
+	//fmt.Println(tcp_dest_ips)
 	fmt.Println("gata")
 }
 
 func handlePacket(packet gopacket.Packet) {
 
 	if packet.Layer(layers.LayerTypeTCP) != nil {
-		handleTCPPacket(packet)
+		//handleTCPPacket(packet)
 	} else if packet.Layer(layers.LayerTypeARP) != nil {
 		handleARPPacket(packet)
 	} else {
@@ -141,7 +141,7 @@ func handleARPPacket(packet gopacket.Packet) {
 
 	if arp.Operation == 1 {
 		// ARP Request
-		fmt.Printf("\rARP %v vrea sa stie MAC pentru %v\n", arp.SourceProtAddress, arp.DstProtAddress)
+		//fmt.Printf("\rARP %v vrea sa stie MAC pentru %v\n", arp.SourceProtAddress, arp.DstProtAddress)
 	} else {
 		// ARP Reply
 		//fmt.Println("ARP Reply")
