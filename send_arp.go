@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"strings"
 
 	"github.com/IbrahimShahzad/gonfigure"
 	"github.com/google/gopacket"
@@ -44,6 +45,25 @@ func main() {
 		panic("Config value 'to' from 'ARP_Send' section not found")
 	}
 
+	secondByteStr, _ := gonfigure.GetParameterValue(objINI, "ARP_Send", "second_byte")
+	secondByte, err := strconv.Atoi(secondByteStr)
+	if err != nil {
+		panic("Config value 'second_byte' from 'ARP_Send' section not found")
+	}
+
+	senderIp, err := gonfigure.GetParameterValue(objINI, "ARP_Send", "sender_ip")
+	if err != nil {
+		panic("Config value 'sender_ip' from 'ARP_Send' section not found")
+	}
+
+	senderMAC, err := gonfigure.GetParameterValue(objINI, "ARP_Send", "sender_mac")
+	if err != nil {
+		panic("Config value 'sender_mac' from 'ARP_Send' section not found")
+	}
+
+	fmt.Println("Sender IP", senderIp)
+	fmt.Println("Sender MAC ", senderMAC)
+
 	// Set up all the layers' fields we can.
 	eth := layers.Ethernet{
 		SrcMAC:       iface.HardwareAddr,
@@ -65,18 +85,28 @@ func main() {
 	}
 
 	// Obtin range-ul de ip-uri la care vreau sa trimit ARP request
-	targetIPs := getTargets(byte(from), byte(to))
+	targetIPs := getTargets(byte(from), byte(to), byte(secondByte))
 	for _, targetIp := range targetIPs {
 
 		// Create ARP request packet
-		routerMac, err := net.ParseMAC("38:de:ad:d7:47:90")	// MAC-ul meu
+		routerMac, err := net.ParseMAC( senderMAC )	// MAC-ul meu
 
 		if err != nil {
 			panic( err )
 		}
 
 		// Sender IP
-		src := []byte{ 192, 168, 10, 154 }
+		senderBytes := strings.Split(senderIp, ".")
+		toIPByte := func( part string ) byte {
+			val, err := strconv.Atoi(part)
+			if err != nil {
+				return 1
+			} else {
+				return byte(val)
+			}
+		}
+		src := []byte{ 192, 168, toIPByte(senderBytes[2]), toIPByte(senderBytes[3]) }
+		fmt.Println(src)
 
 		arp := layers.ARP{
 			AddrType:          layers.LinkTypeEthernet,
@@ -101,13 +131,13 @@ func main() {
 
 // from si to sunt limitele ultimului byte din IP
 // Genereaza IP-uri de tipul 192.168.10.x unde x este intre from si to, inclusiv
-func getTargets(from byte, to byte) []net.IP {
+func getTargets(from byte, to byte, secondByte byte) []net.IP {
 	// Fac lista goala de ip-uri
 	res := make([]net.IP, to - from + 1)
 
 	// Populez fiecare pozitie
 	for i := range res {
-		res[i] = []byte{ 192, 168, 10, from + byte(i) }
+		res[i] = []byte{ 192, 168, secondByte, from + byte(i) }
 	}
 
 	return res
