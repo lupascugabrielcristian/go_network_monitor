@@ -2,11 +2,20 @@
 num_packets=500
 
 [Monitor]
-interface=enp0s31f6
+interface=wlp3s0
 
 [ARP_Send]
-# Valoarea minima pentru 192.168.10.x
-from=150
+# Valoarea minima pentru 172.16.2.x
+from=160
 
 # Valoarea maxima pentru 192.168.10.x
-to=170
+to=250
+
+# Valoarea x pentru 192.168.x.101
+second_byte=2
+
+# Ip-ul meu luat din ip addr show | grep 192
+sender_ip=172.16.2.168
+
+# MAC-ul meu
+sender_mac=24:77:03:28:c7:b0

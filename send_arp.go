@@ -33,29 +33,34 @@ func main() {
 	}
 
 	// Obtin range-ul de ip-uri pentru requesturile ARP
+	// Obtin parametrul 'from' - minimul de la ultimul byte
 	fromStr, _ := gonfigure.GetParameterValue(objINI, "ARP_Send", "from")
 	from, err := strconv.Atoi(fromStr)
 	if err != nil {
 		panic("Config value 'from' from 'ARP_Send' section not found")
 	}
 
+	// Obtin parametrul 'to' - maximul de la ultimul byte
 	toStr, _ := gonfigure.GetParameterValue(objINI, "ARP_Send", "to")
 	to, err := strconv.Atoi(toStr)
 	if err != nil {
 		panic("Config value 'to' from 'ARP_Send' section not found")
 	}
 
+	// Second byte
 	secondByteStr, _ := gonfigure.GetParameterValue(objINI, "ARP_Send", "second_byte")
 	secondByte, err := strconv.Atoi(secondByteStr)
 	if err != nil {
 		panic("Config value 'second_byte' from 'ARP_Send' section not found")
 	}
 
+	// sender_ip
 	senderIp, err := gonfigure.GetParameterValue(objINI, "ARP_Send", "sender_ip")
 	if err != nil {
 		panic("Config value 'sender_ip' from 'ARP_Send' section not found")
 	}
 
+	// sender_mac
 	senderMAC, err := gonfigure.GetParameterValue(objINI, "ARP_Send", "sender_mac")
 	if err != nil {
 		panic("Config value 'sender_mac' from 'ARP_Send' section not found")
@@ -105,8 +110,8 @@ func main() {
 				return byte(val)
 			}
 		}
-		src := []byte{ 192, 168, toIPByte(senderBytes[2]), toIPByte(senderBytes[3]) }
-		fmt.Println(src)
+		src := []byte{ 172, 16, toIPByte(senderBytes[2]), toIPByte(senderBytes[3]) }
+		fmt.Println(targetIp)
 
 		arp := layers.ARP{
 			AddrType:          layers.LinkTypeEthernet,
@@ -137,7 +142,7 @@ func getTargets(from byte, to byte, secondByte byte) []net.IP {
 
 	// Populez fiecare pozitie
 	for i := range res {
-		res[i] = []byte{ 192, 168, secondByte, from + byte(i) }
+		res[i] = []byte{ 172, 16, secondByte, from + byte(i) }
 	}
 
 	return res
